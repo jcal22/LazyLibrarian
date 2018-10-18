@@ -696,14 +696,25 @@ def processDir(reset=False, startdir=None, ignoreclient=False):
                         logger.info('Successfully processed: %s' % global_name)
 
                         ppcount += 1
+                        cmd = 'SELECT Requester, AudioRequester FROM books WHERE BookID=?'
+                        book2 = myDB.match(cmd, (book['BookID'],))
                         if bookname:
                             custom_notify_download("%s %s" % (book['BookID'], book_type))
-                            notify_download("%s %s from %s at %s" %
-                                            (book_type, global_name, book['NZBprov'], now()), book['BookID'])
+                            if book2['Requester']:
+                                notify_download("%s %s from %s at %s with tag %s" %
+                                            (book_type, global_name, book['NZBprov'], now(), book2['Requester']), book['BookID'])
+                            else:
+                                 notify_download("%s %s from %s at %s" %
+                                            (book_type, global_name, book['NZBprov'], now()), book['BookID'])       
                         else:
                             custom_notify_download("%s %s" % (book['BookID'], book['NZBUrl']))
-                            notify_download("%s %s from %s at %s" %
-                                            (book_type, global_name, book['NZBprov'], now()), iss_id)
+                            if book2['Requester']:
+                                notify_download("%s %s from %s at %s with tag %s" %
+                                            (book_type, global_name, book['NZBprov'], now(), book2['Requester']), iss_id)
+                            else:
+                                notify_download("%s %s from %s at %s" %
+                                            (book_type, global_name, book['NZBprov'], now()), book['BookID'])
+
 
                         update_downloads(book['NZBprov'])
                     else:
